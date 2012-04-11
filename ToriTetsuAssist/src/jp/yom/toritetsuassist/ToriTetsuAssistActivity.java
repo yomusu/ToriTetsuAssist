@@ -2,9 +2,8 @@ package jp.yom.toritetsuassist;
 
 import java.util.ArrayList;
 
-import jp.yom.rosendb.RosenDatabase.Houkou;
-import jp.yom.rosendb.TrainPassInfo;
-import jp.yom.rosendb.TrainTime;
+import jp.yom.toritetsuassist.TrainPassInfo.Direction;
+import jp.yom.toritetsuassist.TrainPassInfo.TrainTime;
 import android.app.TabActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -65,7 +64,7 @@ public class ToriTetsuAssistActivity extends TabActivity {
 		//--------------------------------------
 		// テストデータのセットアップ
 		TrainPassInfo	info = new TrainPassInfo();
-		info.direction = Houkou.KUDARI;
+		info.direction = Direction.KUDARI;
 		info.trainName = "あずさ";
 		info.passTime = new TrainTime(13, 30, 50);
 		info.leavedTime = new TrainTime(13,27,00);
