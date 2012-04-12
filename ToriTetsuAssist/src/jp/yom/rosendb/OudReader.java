@@ -348,46 +348,11 @@ public class OudReader {
 	 * @author matsumoto
 	 *
 	 */
-	static class OudParseException extends Exception {
+	static public class OudParseException extends Exception {
 		
 		public OudParseException( String mes ) {
 			super(mes);
 		}
 	}
 	
-	
-	
-	static public void main( String[] args ) {
-		
-		URL	url = OudReader.class.getResource("test.oud");
-		LineNumberReader	lineReader = null;
-		
-		try {
-			
-			InputStream	in = url.openStream();
-			
-			lineReader = new LineNumberReader( new InputStreamReader(in,"MS932") );
-			Prop	oud = parseOudBlock( lineReader );
-			
-			System.out.println( oud );
-			
-		} catch( OudParseException e ) {
-			
-			if( lineReader!=null ) {
-				System.out.println( "解析エラー(行"+lineReader.getLineNumber()+"):"+e.getMessage() );
-			}
-			
-		} catch( IOException e ) {
-			
-			e.printStackTrace();
-			
-		} finally {
-			
-			if( lineReader!=null ) {
-				try {
-					lineReader.close();
-				} catch( IOException e ){}
-			}
-		}
-	}
 }

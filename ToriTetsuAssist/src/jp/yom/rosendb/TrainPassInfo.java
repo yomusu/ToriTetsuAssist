@@ -23,12 +23,20 @@ public class TrainPassInfo {
 	/** 列車名 */
 	public String	trainName;
 	
-	/** 通過時間 */
+	
+	/** 通過時間(by計算) */
 	public TrainTime	passTime;
 	
-	/** 駅出発時刻 */
-	public TrainTime	leavedTime;
+	
+	/** 出発駅出発時刻 */
+	public TrainTime	timeLeaveOff;
+	
+	/** 到着駅到着時刻 */
+	public TrainTime	timeArriveOn;
 	
 	/** 出発駅 */
-	public String	station;
+	public String	stationFrom;
+	
+	/** 到着駅 */
+	public String	stationTo;
 }

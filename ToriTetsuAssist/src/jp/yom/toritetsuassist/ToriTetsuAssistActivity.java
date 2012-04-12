@@ -68,8 +68,8 @@ public class ToriTetsuAssistActivity extends TabActivity {
 		info.direction = Houkou.KUDARI;
 		info.trainName = "あずさ";
 		info.passTime = new TrainTime(13, 30, 50);
-		info.leavedTime = new TrainTime(13,27,00);
-		info.station = "日野";
+		info.timeLeaveOff = new TrainTime(13,27,00);
+		info.stationFrom = "日野";
 		
 		trainInfoList.add( info );
 		
@@ -114,8 +114,8 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			item.direction.setText( trainInfoList.get(position).direction.toString() );
 			item.trainName.setText( trainInfoList.get(position).trainName );
 			item.passTime.setText( trainInfoList.get(position).passTime.toString() );
-			item.leavedTime.setText( trainInfoList.get(position).leavedTime.toString() );
-			item.station.setText( trainInfoList.get(position).station );
+			item.leavedTime.setText( trainInfoList.get(position).timeLeaveOff.toString() );
+			item.station.setText( trainInfoList.get(position).stationFrom );
 			
 			return convertView;
 		}

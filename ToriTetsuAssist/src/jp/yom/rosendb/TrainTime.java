@@ -12,6 +12,14 @@ public class TrainTime implements Comparable<TrainTime> {
 		second = s;
 	}
 	
+	public TrainTime( String hhmm ) {
+		int	n = Integer.parseInt( hhmm );
+		
+		hour = n / 100;
+		minute = n % 100;
+		second = 0;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%02d:%02d:%02d", hour, minute, second );
