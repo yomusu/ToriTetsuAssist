@@ -1,8 +1,16 @@
 package jp.yom.toritetsuassist;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import jp.yom.rosendb.OudReader.OudParseException;
+import jp.yom.rosendb.RosenDatabase;
 import jp.yom.rosendb.RosenDatabase.Houkou;
+import jp.yom.rosendb.RosenDatabase.RosenIterator;
+import jp.yom.rosendb.RosenDatabase.StationInfo;
 import jp.yom.rosendb.TrainPassInfo;
 import jp.yom.rosendb.TrainTime;
 import android.app.TabActivity;
@@ -64,19 +72,55 @@ public class ToriTetsuAssistActivity extends TabActivity {
 		
 		//--------------------------------------
 		// テストデータのセットアップ
-		TrainPassInfo	info = new TrainPassInfo();
-		info.direction = Houkou.KUDARI;
-		info.trainName = "あずさ";
-		info.passTime = new TrainTime(13, 30, 50);
-		info.timeLeaveOff = new TrainTime(13,27,00);
-		info.stationFrom = "日野";
 		
-		trainInfoList.add( info );
+		RosenDatabase	rosen = new RosenDatabase();
 		
+		try {
+			// データの読み込み
+			InputStream	in = getClass().getResource("test.oud").openStream();
+			rosen.build( new BufferedReader( new InputStreamReader(in,"MS932")) );
+			
+			// 使用ダイヤは固定
+			int	diaID = 0;
+			
+			// そのダイヤの全列車に対して指定された駅の到着時間を求める
+			RosenIterator	it = rosen.getTransiter( diaID, Houkou.NOBORI, 0 );
+			
+			while( it.hasNext() ) {
+				
+				StationInfo	s = it.next();
+				
+				TrainPassInfo	info = new TrainPassInfo();
+				
+				info.direction = Houkou.NOBORI;
+				info.trainName = s.train.getResshaText();
+				info.passTime = s.stopInfo.getArriveTime();
+				info.timeLeaveOff = s.stopInfo.getArriveTime();
+				info.stationFrom = s.eki.getEkimei();
+				
+				trainInfoList.add( info );
+			}
+			
+			
+		} catch( OudParseException e ) {
+			
+		}catch (IOException e) {
 
+		}
 	}
 	
 	
+	
+	
+	/*************************************************
+	 * 
+	 * 
+	 * 列車情報の一覧を表示するアダプタ
+	 * 
+	 * 
+	 * @author Yomusu
+	 *
+	 */
 	class TrainAdapter extends BaseAdapter {
 
 		public int getCount() {
@@ -87,7 +131,22 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			return trainInfoList.get(position);
 		}
 
+		@Override
+		public int getViewTypeCount() {
+			return 1;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return true;
+		}
+
 		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public int getItemViewType(int position) {
 			return 0;
 		}
 
@@ -111,11 +170,12 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			
 			ItemView	item = (ItemView)convertView.getTag();
 			
-			item.direction.setText( trainInfoList.get(position).direction.toString() );
-			item.trainName.setText( trainInfoList.get(position).trainName );
-			item.passTime.setText( trainInfoList.get(position).passTime.toString() );
-			item.leavedTime.setText( trainInfoList.get(position).timeLeaveOff.toString() );
-			item.station.setText( trainInfoList.get(position).stationFrom );
+			TrainPassInfo	pass = trainInfoList.get(position);
+			item.direction.setText( pass.direction.toString() );
+			item.trainName.setText( pass.trainName );
+			item.passTime.setText( (pass.passTime!=null) ? pass.passTime.toString() : "--" );
+			item.leavedTime.setText( (pass.timeLeaveOff!=null) ? pass.timeLeaveOff.toString() : "--" );
+			item.station.setText( pass.stationFrom );
 			
 			return convertView;
 		}

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class OudReader {
 	
 	
-	static class Prop {
+	static class OudNode {
 
 		LinkedHashMap<String,Object>	prop = new LinkedHashMap<String,Object>();
 
@@ -47,7 +47,7 @@ public class OudReader {
 		 * @param key
 		 * @param arrays
 		 */
-		public void setArrays( String key, Prop[] arrays ) {
+		public void setArrays( String key, OudNode[] arrays ) {
 			prop.put( key, arrays );
 		}
 
@@ -59,8 +59,8 @@ public class OudReader {
 		 * @param index
 		 * @param value
 		 */
-		public void putToArray( String key, int index, Prop value ) {
-			Prop[]	array = (Prop[])prop.get( key );
+		public void putToArray( String key, int index, OudNode value ) {
+			OudNode[]	array = (OudNode[])prop.get( key );
 			array[index] = value;
 		}
 
@@ -72,10 +72,10 @@ public class OudReader {
 		 * @param cokey
 		 * @param value
 		 */
-		public void putToMap( String key, String cokey, Prop value ) {
-			LinkedHashMap<String,Prop>	map = (LinkedHashMap<String,Prop>)prop.get( key );
+		public void putToMap( String key, String cokey, OudNode value ) {
+			LinkedHashMap<String,OudNode>	map = (LinkedHashMap<String,OudNode>)prop.get( key );
 			if( map==null ) {
-				map = new LinkedHashMap<String,Prop>();
+				map = new LinkedHashMap<String,OudNode>();
 				prop.put( key, map );
 			}
 			map.put( cokey, value );
@@ -88,7 +88,7 @@ public class OudReader {
 		 * @param key
 		 * @param value
 		 */
-		public void put( String key, Prop value ) {
+		public void put( String key, OudNode value ) {
 			prop.put( key, value );
 		}
 
@@ -115,10 +115,10 @@ public class OudReader {
 		 * @param key
 		 * @return
 		 */
-		public Prop getOud( String key ) {
+		public OudNode getOud( String key ) {
 			Object	obj = prop.get(key);
-			if( obj instanceof Prop )
-				return (Prop)obj;
+			if( obj instanceof OudNode )
+				return (OudNode)obj;
 			return null;
 		}
 
@@ -129,10 +129,10 @@ public class OudReader {
 		 * @param key
 		 * @return
 		 */
-		public Prop[] getArray( String key ) {
+		public OudNode[] getArray( String key ) {
 			Object	obj = prop.get(key);
-			if( obj instanceof Prop[] )
-				return (Prop[])obj;
+			if( obj instanceof OudNode[] )
+				return (OudNode[])obj;
 			return null;
 		}
 
@@ -144,10 +144,10 @@ public class OudReader {
 		 * @param key
 		 * @return
 		 */
-		public Prop getFromMap( String key, String cokey ) {
+		public OudNode getFromMap( String key, String cokey ) {
 			Object	obj = prop.get(key);
 			if( obj instanceof LinkedHashMap )
-				return ((LinkedHashMap<String,Prop>)obj).get(cokey);
+				return ((LinkedHashMap<String,OudNode>)obj).get(cokey);
 			return null;
 		}
 
@@ -161,7 +161,7 @@ public class OudReader {
 		public Set<String> getKeySetFromMap( String key, String cokey ) {
 			Object	obj = prop.get(key);
 			if( obj instanceof LinkedHashMap )
-				return ((LinkedHashMap<String,Prop>)obj).keySet();
+				return ((LinkedHashMap<String,OudNode>)obj).keySet();
 			return null;
 		}
 
@@ -187,7 +187,7 @@ public class OudReader {
 
 				//---------------------
 				// Oudプロパティ
-				if( obj instanceof Prop ) {
+				if( obj instanceof OudNode ) {
 					buf.append(key).append(".").append("\n");
 					buf.append( ((OudReader)obj).toString() );
 					buf.append(".").append("\n");
@@ -195,13 +195,13 @@ public class OudReader {
 
 				//---------------------
 				// 固定長配列プロパティ
-				if( obj instanceof Prop[] ) {
+				if( obj instanceof OudNode[] ) {
 
-					Prop[]	array = (Prop[])obj;
-					buf.append(key).append("[]=").append( ((Prop[])obj).length ).append("\n");
+					OudNode[]	array = (OudNode[])obj;
+					buf.append(key).append("[]=").append( ((OudNode[])obj).length ).append("\n");
 
 					for( int i=0; i<array.length; i++ ) {
-						Prop oud = array[i];
+						OudNode oud = array[i];
 						buf.append(key).append("[").append(i).append("].\n");
 						buf.append( oud );
 						buf.append(".").append("\n");
@@ -241,9 +241,9 @@ public class OudReader {
 	 * @throws IOException
 	 * @throws OudParseException
 	 */
-	static public Prop parseOudBlock( BufferedReader in ) throws IOException,OudParseException {
+	static public OudNode parseOudBlock( BufferedReader in ) throws IOException,OudParseException {
 		
-		Prop	oud = new Prop();
+		OudNode	oud = new OudNode();
 		
 		
 		// ノーマルプロパティ：<key>=<value>
@@ -285,7 +285,7 @@ public class OudReader {
 				Matcher	m = p2.matcher(line);
 				if( m.find() ) {
 					String	key = m.group(1);
-					Prop	child = parseOudBlock( in );
+					OudNode	child = parseOudBlock( in );
 					oud.put( key, child );
 					continue;
 				}
@@ -297,7 +297,7 @@ public class OudReader {
 				if( m.find() ) {
 					String	key = m.group(1);
 					int	count = Integer.parseInt( m.group(2) );
-					oud.setArrays( key, new Prop[count] );
+					oud.setArrays( key, new OudNode[count] );
 					continue;
 				}
 			}
@@ -308,7 +308,7 @@ public class OudReader {
 				if( m.find() ) {
 					String	key = m.group(1);
 					int	index = Integer.parseInt( m.group(2) );
-					Prop	child = parseOudBlock( in );
+					OudNode	child = parseOudBlock( in );
 					oud.putToArray( key, index, child );
 					continue;
 				}
@@ -320,7 +320,7 @@ public class OudReader {
 				if( m.find() ) {
 					String	key = m.group(1);
 					String	cokey = m.group(2);
-					Prop	child = parseOudBlock( in );
+					OudNode	child = parseOudBlock( in );
 					oud.putToMap( key, cokey, child );
 					continue;
 				}
