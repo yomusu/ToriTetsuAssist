@@ -2,6 +2,7 @@ package jp.yom.rosendb;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -43,12 +44,13 @@ public class RosenDatabase {
 	static public class Eki {
 		
 		/** 駅ID */
-		private int		id;
+		final public int		id;
 		/** プロパティ */
 		private OudNode		prop;
 		
 		public Eki( int id, OudNode prop ) {
 			this.prop = prop;
+			this.id = id;
 		}
 		
 		/** 駅の表示用テキスト */
@@ -64,23 +66,22 @@ public class RosenDatabase {
 	
 	
 	
-	
+	/**********************************
+	 * 
+	 * これっているのか？
+	 * 
+	 * @author Yomusu
+	 *
+	 */
 	public interface RosenIterator {
 		
-		/******************************
-		 * 
-		 * 終点かどうか
-		 * 
-		 * @return
-		 */
+		/** 列車情報を取得 */
+		public DiaTrainInfo getTrainInfo();
+		
+		/** 終点かどうか */
 		public boolean hasNext();
 		
-		/******************************
-		 * 
-		 * 次の駅へ行く
-		 * 
-		 * @return
-		 */
+		/** 次の駅へ行く */
 		public StationInfo next();
 		
 	}
@@ -91,8 +92,6 @@ public class RosenDatabase {
 		public Eki		eki;
 		TrainTime	arriveTime;
 		TrainTime	leaveTime;
-		
-		public DiaTrainInfo	train;
 		
 		public StopInfo	stopInfo;
 	}
@@ -116,6 +115,26 @@ public class RosenDatabase {
 	Eki[]	stations;
 	
 	
+	
+	/**************************************************
+	 * 
+	 * 
+	 * 
+	 * @param diaID
+	 * @return
+	 */
+	public DiaKey[] correctDiaKey( int diaID ) {
+		
+		ArrayList<DiaKey>	result = new ArrayList<DiaKey>();
+		
+		for( DiaKey key : diaMap.keySet() ) {
+			if( key.getDiaID()==diaID )
+				result.add( key );
+		}
+		
+		return result.toArray( new DiaKey[0] );
+	}
+	
 	/*************************************************
 	 * 
 	 * 
@@ -126,14 +145,19 @@ public class RosenDatabase {
 	 * @param ressyaid
 	 * @return
 	 */
-	public RosenIterator getTransiter( int diaID, Houkou dir, int ressyaid ) {
+	public RosenIterator getTransiter( DiaKey diaKey ) {
 		
 		// 列車情報
-		final DiaTrainInfo	train = diaMap.get( new DiaKey(diaID,dir,ressyaid) );
+		final DiaTrainInfo	train = diaMap.get( diaKey );
 		
 		final Iterator<StopInfo>	it = train.getStopInfoIter();
 		
 		return new RosenIterator() {
+			
+			@Override
+			public DiaTrainInfo getTrainInfo() {
+				return train;
+			}
 			
 			@Override
 			public boolean hasNext() {
@@ -147,8 +171,6 @@ public class RosenDatabase {
 				s.stopInfo = it.next();
 				// 駅
 				s.eki = stations[s.stopInfo.ekiID];
-				// 列車情報
-				s.train = train;
 				
 				return s;
 			}

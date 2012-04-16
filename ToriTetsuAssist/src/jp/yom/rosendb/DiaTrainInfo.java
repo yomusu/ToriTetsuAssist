@@ -82,9 +82,6 @@ public class DiaTrainInfo {
 	/** 元データ */
 	private OudNode	prop;
 	
-	/** 方向 */
-	Houkou	houkou;
-	
 	/** 列車種別のID */
 	int	resshaID;
 	
@@ -106,7 +103,6 @@ public class DiaTrainInfo {
 		
 		// 列車種別ID
 		resshaID = Integer.parseInt( prop.getString("Syubetsu") );
-		
 		
 		// 駅時刻の解析
 		String[]	strs = prop.getString("EkiJikoku").split(",");
@@ -218,7 +214,7 @@ public class DiaTrainInfo {
 	static public class StopInfo {
 		
 		/** 駅ID */
-		int	ekiID;
+		public final int	ekiID;
 		
 		/** 取り扱い */
 		int	type;
@@ -256,6 +252,7 @@ public class DiaTrainInfo {
 		}
 		
 		public TrainTime getArriveTime() {  return arriveTime; }
+		
 	}
 
 }

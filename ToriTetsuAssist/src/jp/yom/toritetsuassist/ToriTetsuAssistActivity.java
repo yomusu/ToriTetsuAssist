@@ -6,13 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import jp.yom.rosendb.DiaTrainInfo.DiaKey;
 import jp.yom.rosendb.OudReader.OudParseException;
 import jp.yom.rosendb.RosenDatabase;
 import jp.yom.rosendb.RosenDatabase.Houkou;
 import jp.yom.rosendb.RosenDatabase.RosenIterator;
 import jp.yom.rosendb.RosenDatabase.StationInfo;
 import jp.yom.rosendb.TrainPassInfo;
-import jp.yom.rosendb.TrainTime;
 import android.app.TabActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -83,24 +83,17 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			// 使用ダイヤは固定
 			int	diaID = 0;
 			
+			DiaKey[]	keys = rosen.correctDiaKey( diaID );
+			
 			// そのダイヤの全列車に対して指定された駅の到着時間を求める
-			RosenIterator	it = rosen.getTransiter( diaID, Houkou.NOBORI, 0 );
-			
-			while( it.hasNext() ) {
+			for( DiaKey key : keys ) {
 				
-				StationInfo	s = it.next();
+				RosenIterator	it = rosen.getTransiter( key );
 				
-				TrainPassInfo	info = new TrainPassInfo();
-				
-				info.direction = Houkou.NOBORI;
-				info.trainName = s.train.getResshaText();
-				info.passTime = s.stopInfo.getArriveTime();
-				info.timeLeaveOff = s.stopInfo.getArriveTime();
-				info.stationFrom = s.eki.getEkimei();
-				
-				trainInfoList.add( info );
+				TrainPassInfo	pass = calcPass( it );
+				if( pass!=null )
+					trainInfoList.add( pass );
 			}
-			
 			
 		} catch( OudParseException e ) {
 			
@@ -110,6 +103,36 @@ public class ToriTetsuAssistActivity extends TabActivity {
 	}
 	
 	
+	/*************************************************
+	 * 
+	 * 指定した路線イテから
+	 * 指定した駅を通過する時間を取得します
+	 * 
+	 * @param it
+	 * @return
+	 */
+	private TrainPassInfo calcPass( RosenIterator it ) {
+		
+		while( it.hasNext() ) {
+
+			StationInfo	s = it.next();
+
+			if( s.stopInfo.ekiID==2 ) {
+
+				TrainPassInfo	info = new TrainPassInfo();
+
+				info.direction = it.getTrainInfo().key.getHoukou();
+				info.trainName = it.getTrainInfo().getResshaText();
+				info.passTime = s.stopInfo.getArriveTime();
+				info.timeLeaveOff = s.stopInfo.getArriveTime();
+				info.stationFrom = s.eki.getEkimei();
+
+				return info;
+			}
+		}
+		
+		return null;
+	}
 	
 	
 	/*************************************************
