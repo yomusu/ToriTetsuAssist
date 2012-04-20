@@ -4,10 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import jp.yom.rosendb.DiaTrainInfo.DiaKey;
-import jp.yom.rosendb.DiaTrainInfo.StopInfo;
 import jp.yom.rosendb.OudReader.OudNode;
 import jp.yom.rosendb.OudReader.OudParseException;
 
@@ -66,37 +64,6 @@ public class RosenDatabase {
 	
 	
 	
-	/**********************************
-	 * 
-	 * これっているのか？
-	 * 
-	 * @author Yomusu
-	 *
-	 */
-	public interface RosenIterator {
-		
-		/** 列車情報を取得 */
-		public DiaTrainInfo getTrainInfo();
-		
-		/** 終点かどうか */
-		public boolean hasNext();
-		
-		/** 次の駅へ行く */
-		public StationInfo next();
-		
-	}
-	
-	
-	static public class StationInfo {
-		
-		public Eki		eki;
-		TrainTime	arriveTime;
-		TrainTime	leaveTime;
-		
-		public StopInfo	stopInfo;
-	}
-	
-	
 	
 	//==================================================
 	// メンバ変数の宣言
@@ -135,49 +102,18 @@ public class RosenDatabase {
 		return result.toArray( new DiaKey[0] );
 	}
 	
-	/*************************************************
-	 * 
-	 * 
-	 * 列車運行イテレータを作成して返します
-	 * 
-	 * @param diaID
-	 * @param dir
-	 * @param ressyaid
-	 * @return
-	 */
-	public RosenIterator getTransiter( DiaKey diaKey ) {
+	
+	public Eki getEki( int ekiID ) {
 		
-		// 列車情報
-		final DiaTrainInfo	train = diaMap.get( diaKey );
-		
-		final Iterator<StopInfo>	it = train.getStopInfoIter();
-		
-		return new RosenIterator() {
-			
-			@Override
-			public DiaTrainInfo getTrainInfo() {
-				return train;
-			}
-			
-			@Override
-			public boolean hasNext() {
-				return it.hasNext();
-			}
-			
-			@Override
-			public StationInfo next() {
-				
-				StationInfo	s = new StationInfo();
-				s.stopInfo = it.next();
-				// 駅
-				s.eki = stations[s.stopInfo.ekiID];
-				
-				return s;
-			}
-			
-		};
+		return stations[ekiID];
 	}
 	
+	
+	public DiaTrainInfo getDiaTrainInfo( DiaKey diaKey ) {
+		
+		return diaMap.get( diaKey );
+		
+	}
 	
 	
 	/************************************

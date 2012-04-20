@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import jp.yom.rosendb.DiaTrainInfo;
 import jp.yom.rosendb.DiaTrainInfo.DiaKey;
+import jp.yom.rosendb.DiaTrainInfo.StopInfo;
 import jp.yom.rosendb.OudReader.OudParseException;
 import jp.yom.rosendb.RosenDatabase;
-import jp.yom.rosendb.RosenDatabase.Houkou;
-import jp.yom.rosendb.RosenDatabase.RosenIterator;
-import jp.yom.rosendb.RosenDatabase.StationInfo;
 import jp.yom.rosendb.TrainPassInfo;
 import android.app.TabActivity;
 import android.os.Bundle;
@@ -88,9 +88,7 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			// そのダイヤの全列車に対して指定された駅の到着時間を求める
 			for( DiaKey key : keys ) {
 				
-				RosenIterator	it = rosen.getTransiter( key );
-				
-				TrainPassInfo	pass = calcPass( it );
+				TrainPassInfo	pass = calcPass( rosen, key );
 				if( pass!=null )
 					trainInfoList.add( pass );
 			}
@@ -111,21 +109,30 @@ public class ToriTetsuAssistActivity extends TabActivity {
 	 * @param it
 	 * @return
 	 */
-	private TrainPassInfo calcPass( RosenIterator it ) {
+	private TrainPassInfo calcPass( RosenDatabase rosen, DiaKey key ) {
+		
+		DiaTrainInfo	dia = rosen.getDiaTrainInfo( key );
+		
+		Iterator<StopInfo>	it = dia.getStopInfoIter();
 		
 		while( it.hasNext() ) {
 
-			StationInfo	s = it.next();
-
-			if( s.stopInfo.ekiID==2 ) {
+			StopInfo	s = it.next();
+			
+			// 指定駅を通過する場合がある
+			
+			// その場合は、最後に停車した駅を記録する
+			
+			
+			if( s.ekiID==2 ) {
 
 				TrainPassInfo	info = new TrainPassInfo();
 
-				info.direction = it.getTrainInfo().key.getHoukou();
-				info.trainName = it.getTrainInfo().getResshaText();
-				info.passTime = s.stopInfo.getArriveTime();
-				info.timeLeaveOff = s.stopInfo.getArriveTime();
-				info.stationFrom = s.eki.getEkimei();
+				info.direction = dia.key.getHoukou();
+				info.trainName = dia.getResshaText();
+				info.passTime = s.getArriveTime();
+				info.timeLeaveOff = s.getArriveTime();
+				info.stationFrom = rosen.getEki( s.ekiID ).getEkimei();
 
 				return info;
 			}
