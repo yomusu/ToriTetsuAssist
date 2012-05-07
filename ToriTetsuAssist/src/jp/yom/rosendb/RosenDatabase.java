@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import jp.yom.rosendb.DiaTrainInfo.DiaKey;
+import jp.yom.rosendb.EkiPassInfo.EkiStopInfo;
+import jp.yom.rosendb.EkiPassInfo.EkiThroughInfo;
 import jp.yom.rosendb.OudReader.OudNode;
 import jp.yom.rosendb.OudReader.OudParseException;
 
@@ -85,7 +88,7 @@ public class RosenDatabase {
 	
 	/**************************************************
 	 * 
-	 * 
+	 * 指定したダイヤIDのDiaKeyをすべて取得する
 	 * 
 	 * @param diaID
 	 * @return
@@ -109,10 +112,17 @@ public class RosenDatabase {
 	}
 	
 	
-	public DiaTrainInfo getDiaTrainInfo( DiaKey diaKey ) {
+	/*************************************
+	 * 
+	 * 
+	 * ダイヤ情報を取得する
+	 * 
+	 * @param diaKey
+	 * @return
+	 */
+	public DiaTrainInfo getDiaInfo( DiaKey diaKey ) {
 		
 		return diaMap.get( diaKey );
-		
 	}
 	
 	
@@ -148,8 +158,12 @@ public class RosenDatabase {
 			{
 				OudNode[]	conts = diaProps[diaID].getFromMap("Ressya","Nobori").getArray("RessyaCont");
 				for( int n=0; n<conts.length; n++ ) {
+					
+					String[]	jikokus = conts[n].getString("EkiJikoku").split(",");
+					
 					DiaKey	key = new DiaKey( diaID, Houkou.NOBORI, n );
-					diaMap.put( key, new DiaTrainInfo( key, conts[n] ) );
+					
+					diaMap.put( key, new DiaTrainInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
 				}
 			}
 
@@ -157,11 +171,75 @@ public class RosenDatabase {
 			{
 				OudNode[]	conts = diaProps[diaID].getFromMap("Ressya","Kudari").getArray("RessyaCont");
 				for( int n=0; n<conts.length; n++ ) {
+					
+					String[]	jikokus = conts[n].getString("EkiJikoku").split(",");
+					
 					DiaKey	key = new DiaKey( diaID, Houkou.KUDARI, n );
-					diaMap.put( key, new DiaTrainInfo( key, conts[n] ) );
+					
+					diaMap.put( key, new DiaTrainInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
 				}
 			}
 		}
 	}
 	
+	static final private Pattern	jikokuPattern = Pattern.compile("^([0-9]);(\\d*)/(\\d*)$|^([0-9]);(\\d+)$|^([0-9])$" );
+	
+	/*************************************************
+	 * 
+	 * 
+	 * 時刻書式の文字列配列からStopInfoのIteratorを作成する
+	 * 
+	 * 配列は駅の通りに並んでいることが条件
+	 * 但し、上り・下りで並び順が逆
+	 * 
+	 * @param jikokuStrs
+	 * @return
+	 */
+	private EkiPassInfo[] buildDiaInfo( String[] jikokuStrs ) {
+		
+		ArrayList<EkiPassInfo>	ekiPassList = new ArrayList<EkiPassInfo>();
+
+		// 駅時刻の解析
+		for( int i=0; i<jikokuStrs.length; i++ ) {
+			
+			Eki	eki = getEki(i);
+			
+			Matcher	m = jikokuPattern.matcher( jikokuStrs[i] );
+			if( m.find() ) {
+
+				EkiPassInfo	info = null;
+
+				if( m.group(1)!=null ) {
+					
+					// 1;525/526 --全てセットされている
+					// 1;525/    --終点
+					// 1;   /526 --始発(使われていない？)
+				//	int	type = Integer.parseInt( m.group(1) );
+					TrainTime	t1 = m.group(2).isEmpty() ? null : new TrainTime(m.group(2));
+					TrainTime	t2 = m.group(3).isEmpty() ? null : new TrainTime(m.group(3));
+					info = new EkiStopInfo( eki, t1, t2 );
+
+				} else if( m.group(4)!=null ) {
+					
+					// 1;525--出発を省略
+					info = new EkiStopInfo( eki, new TrainTime( m.group(5) ) );
+
+				} else if( m.group(6)!=null ) {
+
+					// 1--取り扱いのみ
+					info = new EkiThroughInfo( eki );
+				}
+
+				ekiPassList.add( info );
+
+			} else {
+
+				// unknown data
+			//	stopInfoList.add( null );
+
+			}
+		}
+		
+		return ekiPassList.toArray( new EkiPassInfo[0] );
+	}
 }

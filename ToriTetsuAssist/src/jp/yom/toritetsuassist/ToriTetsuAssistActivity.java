@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 
+import jp.yom.rosendb.DiaKey;
 import jp.yom.rosendb.DiaTrainInfo;
-import jp.yom.rosendb.DiaTrainInfo.DiaKey;
-import jp.yom.rosendb.DiaTrainInfo.StopInfo;
+import jp.yom.rosendb.EkiPassInfo;
+import jp.yom.rosendb.EkiPassInfo.EkiPassIterator;
+import jp.yom.rosendb.EkiPassInfo.EkiStopInfo;
 import jp.yom.rosendb.OudReader.OudParseException;
 import jp.yom.rosendb.RosenDatabase;
 import jp.yom.rosendb.TrainPassInfo;
@@ -88,7 +89,7 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			// そのダイヤの全列車に対して指定された駅の到着時間を求める
 			for( DiaKey key : keys ) {
 				
-				TrainPassInfo	pass = calcPass( rosen, key );
+				TrainPassInfo	pass = calcPass( rosen.getDiaInfo(key) );
 				if( pass!=null )
 					trainInfoList.add( pass );
 			}
@@ -109,30 +110,30 @@ public class ToriTetsuAssistActivity extends TabActivity {
 	 * @param it
 	 * @return
 	 */
-	private TrainPassInfo calcPass( RosenDatabase rosen, DiaKey key ) {
+	private TrainPassInfo calcPass( DiaTrainInfo dia ) {
 		
-		DiaTrainInfo	dia = rosen.getDiaTrainInfo( key );
+		EkiPassIterator	it = dia.iterator();
 		
-		Iterator<StopInfo>	it = dia.getStopInfoIter();
-		
-		while( it.hasNext() ) {
+		while( it.hasNextEki()==false ) {
 
-			StopInfo	s = it.next();
+			EkiPassInfo	noweki = it.nextEki();
 			
 			// 指定駅を通過する場合がある
 			
 			// その場合は、最後に停車した駅を記録する
 			
 			
-			if( s.ekiID==2 ) {
+			if( noweki.eki.id==2 ) {
 
 				TrainPassInfo	info = new TrainPassInfo();
-
+				
+				EkiStopInfo	lastStopEki = it.getLastStopEki();
+				
 				info.direction = dia.key.getHoukou();
 				info.trainName = dia.getResshaText();
-				info.passTime = s.getArriveTime();
-				info.timeLeaveOff = s.getArriveTime();
-				info.stationFrom = rosen.getEki( s.ekiID ).getEkimei();
+				info.passTime = lastStopEki.getArriveTime();
+				info.timeLeaveOff = lastStopEki.getArriveTime();
+				info.stationFrom = lastStopEki.eki.getEkimei();
 
 				return info;
 			}
