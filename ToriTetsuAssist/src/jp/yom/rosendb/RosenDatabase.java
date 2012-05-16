@@ -76,7 +76,7 @@ public class RosenDatabase {
 	private final HashMap<Integer,String>	diaNameMap = new HashMap<Integer,String>();
 	
 	/** ダイヤマップ */
-	private HashMap<DiaKey,DiaTrainInfo>	diaMap = new HashMap<DiaKey,DiaTrainInfo>();
+	private HashMap<DiaKey,TrainRouteInfo>	diaMap = new HashMap<DiaKey,TrainRouteInfo>();
 	
 	/** マスターデータ */
 	private	OudNode	rosenProp;
@@ -120,7 +120,7 @@ public class RosenDatabase {
 	 * @param diaKey
 	 * @return
 	 */
-	public DiaTrainInfo getDiaInfo( DiaKey diaKey ) {
+	public TrainRouteInfo getRouteInfo( DiaKey diaKey ) {
 		
 		return diaMap.get( diaKey );
 	}
@@ -163,7 +163,7 @@ public class RosenDatabase {
 					
 					DiaKey	key = new DiaKey( diaID, Houkou.NOBORI, n );
 					
-					diaMap.put( key, new DiaTrainInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
+					diaMap.put( key, new TrainRouteInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
 				}
 			}
 
@@ -176,7 +176,7 @@ public class RosenDatabase {
 					
 					DiaKey	key = new DiaKey( diaID, Houkou.KUDARI, n );
 					
-					diaMap.put( key, new DiaTrainInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
+					diaMap.put( key, new TrainRouteInfo( key, conts[n], buildDiaInfo( jikokus ) ) );
 				}
 			}
 		}

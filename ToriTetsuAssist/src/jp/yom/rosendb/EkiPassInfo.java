@@ -59,7 +59,7 @@ public class EkiPassInfo {
 	// メンバ変数の宣言
 	//=================================================================
 	
-	/** 駅ID */
+	/** 駅 */
 	public final Eki	eki;
 	
 	/** 出発時刻 */
@@ -97,7 +97,7 @@ public class EkiPassInfo {
 	 * @author Yomusu
 	 *
 	 */
-	static public class EkiPassIterator {
+	static public class RouteIterator {
 		
 		int	pos = 0;
 		private final EkiPassInfo[]	infos;
@@ -109,9 +109,15 @@ public class EkiPassInfo {
 		int	shutenIndex;
 		
 		
-		public EkiPassIterator( EkiPassInfo[] infos ) {
+		public RouteIterator( EkiPassInfo[] infos ) {
 			
 			this.infos = infos;
+			
+			// 始発(最初の停車駅)を頭出し
+			for( pos=0; pos<infos.length; pos++ ) {
+				if( infos[pos] instanceof EkiStopInfo )
+					break;
+			}
 			
 			// 終点のIndexを求める
 			for( int i=infos.length-1; i>=0; i-- ) {
@@ -142,17 +148,6 @@ public class EkiPassInfo {
 		
 		/***********************************
 		 * 
-		 * 次の停車駅へ行く
-		 * 通過はすっ飛ばす
-		 * 
-		 * @return
-		 */
-//		public EkiStopInfo nextStopEki() {
-//			return null;
-//		}
-		
-		/***********************************
-		 * 
 		 * 次の停車駅があるかどうか
 		 * 
 		 * @return
@@ -162,7 +157,7 @@ public class EkiPassInfo {
 			if( pos >= shutenIndex )
 				return false;
 			
-			return false;
+			return true;
 		}
 		
 		

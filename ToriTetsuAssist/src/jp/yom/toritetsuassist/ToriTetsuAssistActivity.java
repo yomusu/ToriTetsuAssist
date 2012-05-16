@@ -7,11 +7,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import jp.yom.rosendb.DiaKey;
-import jp.yom.rosendb.DiaTrainInfo;
+import jp.yom.rosendb.TrainRouteInfo;
 import jp.yom.rosendb.EkiPassInfo;
-import jp.yom.rosendb.EkiPassInfo.EkiPassIterator;
+import jp.yom.rosendb.EkiPassInfo.RouteIterator;
 import jp.yom.rosendb.EkiPassInfo.EkiStopInfo;
 import jp.yom.rosendb.OudReader.OudParseException;
+import jp.yom.rosendb.RosenDatabase.Eki;
 import jp.yom.rosendb.RosenDatabase;
 import jp.yom.rosendb.TrainPassInfo;
 import android.app.TabActivity;
@@ -84,14 +85,20 @@ public class ToriTetsuAssistActivity extends TabActivity {
 			// 使用ダイヤは固定
 			int	diaID = 0;
 			
-			DiaKey[]	keys = rosen.correctDiaKey( diaID );
+			// 基準駅
+			Eki	baseEki = rosen.getEki(2);
 			
 			// そのダイヤの全列車に対して指定された駅の到着時間を求める
+			DiaKey[]	keys = rosen.correctDiaKey( diaID );
 			for( DiaKey key : keys ) {
-				
-				TrainPassInfo	pass = calcPass( rosen.getDiaInfo(key) );
-				if( pass!=null )
-					trainInfoList.add( pass );
+
+				TrainRouteInfo	route = rosen.getRouteInfo(key);
+				if( route.contentEki(baseEki) ) {
+					
+					TrainPassInfo	pass = calcPass( baseEki, route );
+					if( pass!=null )
+						trainInfoList.add( pass );
+				}
 			}
 			
 		} catch( OudParseException e ) {
@@ -110,31 +117,27 @@ public class ToriTetsuAssistActivity extends TabActivity {
 	 * @param it
 	 * @return
 	 */
-	private TrainPassInfo calcPass( DiaTrainInfo dia ) {
+	private TrainPassInfo calcPass( Eki baseEki, TrainRouteInfo route ) {
 		
-		EkiPassIterator	it = dia.iterator();
-		
-		while( it.hasNextEki()==false ) {
+		// 始発駅からルートを巡航
+		RouteIterator	it = route.iter();
+		while( it.hasNextEki() ) {
 
 			EkiPassInfo	noweki = it.nextEki();
 			
 			// 指定駅を通過する場合がある
 			
-			// その場合は、最後に停車した駅を記録する
-			
-			
-			if( noweki.eki.id==2 ) {
+			if( noweki.eki.id==baseEki.id ) {
+
+				// 最後に停車した駅を取得
+				EkiStopInfo	lastStopEki = it.getLastStopEki();
 
 				TrainPassInfo	info = new TrainPassInfo();
-				
-				EkiStopInfo	lastStopEki = it.getLastStopEki();
-				
-				info.direction = dia.key.getHoukou();
-				info.trainName = dia.getResshaText();
+				info.direction = route.key.getHoukou();
+				info.trainName = route.getResshaText();
 				info.passTime = lastStopEki.getArriveTime();
 				info.timeLeaveOff = lastStopEki.getArriveTime();
 				info.stationFrom = lastStopEki.eki.getEkimei();
-
 				return info;
 			}
 		}

@@ -1,5 +1,15 @@
 package jp.yom.rosendb;
 
+
+/***********************************************
+ * 
+ * 
+ * 時刻表向け時刻クラス
+ * 
+ * 
+ * @author Yomusu
+ *
+ */
 public class TrainTime implements Comparable<TrainTime> {
 
 	int	hour;

@@ -1,7 +1,8 @@
 package jp.yom.rosendb;
 
-import jp.yom.rosendb.EkiPassInfo.EkiPassIterator;
+import jp.yom.rosendb.EkiPassInfo.RouteIterator;
 import jp.yom.rosendb.OudReader.OudNode;
+import jp.yom.rosendb.RosenDatabase.Eki;
 
 
 /**********************************
@@ -15,7 +16,7 @@ import jp.yom.rosendb.OudReader.OudNode;
  * 
  */
 
-public class DiaTrainInfo {
+public class TrainRouteInfo {
 	
 	
 	
@@ -39,7 +40,7 @@ public class DiaTrainInfo {
 	EkiPassInfo[]	stopInfoList;
 	
 	
-	public DiaTrainInfo( DiaKey key, OudNode src, EkiPassInfo[] list ) {
+	public TrainRouteInfo( DiaKey key, OudNode src, EkiPassInfo[] list ) {
 		
 		this.key = key;
 		this.prop = src;
@@ -48,6 +49,22 @@ public class DiaTrainInfo {
 		resshaID = Integer.parseInt( prop.getString("Syubetsu") );
 		
 		this.stopInfoList = list;
+	}
+	
+	/*******************************************
+	 * 
+	 * 指定した駅が通過範囲内に入っているかどうか
+	 * 始発より前、終点より後ろだとfalseを返します
+	 * 
+	 * @return
+	 */
+	public boolean contentEki( Eki eki ) {
+		
+		for( EkiPassInfo p : stopInfoList )
+			if( p.eki.id == eki.id )
+				return true;
+		
+		return false;
 	}
 	
 	/*******************************************
@@ -78,13 +95,14 @@ public class DiaTrainInfo {
 	
 	/*******************************************
 	 * 
-	 * 停車情報イテレータを取得する
+	 * 
+	 * 始発から終点までの駅通過情報イテレータを取得する
 	 * 
 	 * @return
 	 */
-	public EkiPassIterator iterator() {
+	public RouteIterator iter() {
 		
-		return new EkiPassIterator( stopInfoList );
+		return new RouteIterator( stopInfoList );
 	}
 	
 	public String toString() {
